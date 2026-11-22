@@ -4639,6 +4639,77 @@
       var isDark = _stemTheme === 'dark';
       var isContrast = _stemTheme === 'contrast';
       var [_journeyEntry, _setJourneyEntry] = React.useState(null);
+      var [_showActiveDirectLink, _setShowActiveDirectLink] = React.useState(false);
+      var [_showCatalogDirectLinks, _setShowCatalogDirectLinks] = React.useState(false);
+      var [_copiedDirectLinkId, _setCopiedDirectLinkId] = React.useState('');
+      var [_directLinkStatus, _setDirectLinkStatus] = React.useState('');
+      var _directLinkCopyTimerRef = React.useRef(null);
+
+      React.useEffect(function () {
+        _setShowActiveDirectLink(false);
+      }, [stemLabTool]);
+
+      React.useEffect(function () {
+        return function () {
+          if (_directLinkCopyTimerRef.current) clearTimeout(_directLinkCopyTimerRef.current);
+        };
+      }, []);
+
+      function _getStemCloudflareUrl(toolId) {
+        if (!toolId || /^_cat_/.test(String(toolId))) return '';
+        var slug = String(toolId)
+          .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+          .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
+          .replace(/[\s_]+/g, '-')
+          .toLowerCase();
+        if (!/^[a-z0-9-]+$/.test(slug)) return '';
+        return 'https://alloflow-cdn.pages.dev/' + slug;
+      }
+
+      function _copyStemCloudflareUrl(toolId, label, url) {
+        if (!url) return;
+        var finish = function (ok) {
+          if (_directLinkCopyTimerRef.current) clearTimeout(_directLinkCopyTimerRef.current);
+          if (ok) {
+            _setCopiedDirectLinkId(toolId);
+            var msg = 'Copied Cloudflare link for ' + label + '.';
+            _setDirectLinkStatus(msg);
+            if (typeof announceToSR === 'function') announceToSR(msg);
+            if (typeof addToast === 'function') addToast(msg, 'success');
+            _directLinkCopyTimerRef.current = setTimeout(function () {
+              _setCopiedDirectLinkId('');
+            }, 2500);
+          } else {
+            var fallbackMsg = 'Select and copy the Cloudflare link for ' + label + ': ' + url;
+            _setDirectLinkStatus(fallbackMsg);
+            if (typeof announceToSR === 'function') announceToSR(fallbackMsg);
+          }
+        };
+        var fallbackCopy = function () {
+          try {
+            if (!document || !document.body) return false;
+            var ta = document.createElement('textarea');
+            ta.value = url;
+            ta.setAttribute('readonly', '');
+            ta.setAttribute('aria-label', 'Temporary clipboard text');
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            ta.style.pointerEvents = 'none';
+            document.body.appendChild(ta);
+            ta.select();
+            var ok = typeof document.execCommand === 'function' ? document.execCommand('copy') : false;
+            document.body.removeChild(ta);
+            return !!ok;
+          } catch (e) {
+            return false;
+          }
+        };
+        if (navigator && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+          navigator.clipboard.writeText(url).then(function () { finish(true); }).catch(function () { finish(fallbackCopy()); });
+        } else {
+          finish(fallbackCopy());
+        }
+      }
 
       // ── STEAM Lab Global Sound Effect Helper ──
       //
@@ -4796,6 +4867,8 @@
           '.stem-active-tool-title p { margin: 2px 0 0; font-size: 11px; line-height: 1.25; }',
           '.stem-active-tool-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }',
           '.stem-active-tool-back { display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 0 12px; border-radius: 10px; border: 1px solid rgba(99,102,241,0.35); font-size: 12px; font-weight: 900; }',
+          '.stem-direct-link-btn:focus-visible, .stem-direct-link-action:focus-visible { outline: 3px solid #4f46e5 !important; outline-offset: 2px !important; }',
+          '.theme-dark .stem-direct-link-btn:focus-visible, .theme-dark .stem-direct-link-action:focus-visible, .theme-contrast .stem-direct-link-btn:focus-visible, .theme-contrast .stem-direct-link-action:focus-visible { outline: 3px solid #fbbf24 !important; outline-offset: 2px !important; }',
           '.stem-active-tool-hint { font-size: 11px; white-space: nowrap; }',
           '@media (max-width: 640px) { .stem-lab-modal-shell { margin: 0 !important; border-radius: 0 !important; max-width: 100vw !important; max-height: 100% !important; } .stem-lab-topbar { padding: 10px 12px 10px 88px !important; align-items: center !important; flex-wrap: wrap !important; } .stem-lab-brand-block { flex: 1 1 160px !important; gap: 8px !important; } .stem-lab-brand-icon, .stem-lab-keyboard-badge, .stem-lab-xp-badge { display: none !important; } .stem-lab-title-lockup h2 { font-size: 19px !important; line-height: 1.1 !important; white-space: nowrap; } .stem-lab-title-lockup p { font-size: 11.5px !important; line-height: 1.3 !important; max-width: 190px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .stem-lab-actionbar { flex: 0 0 auto !important; margin-left: 0 !important; margin-top: 2px !important; gap: 2px !important; flex-wrap: wrap; max-width: 100%; } .stem-lab-actionbar button { box-sizing: border-box; flex: 0 0 36px !important; width: 36px; min-width: 36px; max-width: 36px; height: 36px; min-height: 36px; padding: 0 !important; justify-content: center; background: rgba(255,255,255,0.14); } .stem-lab-actionbar button span { display: none !important; } .stem-active-toolbar { padding: 10px 12px; gap: 10px; } .stem-active-tool-icon { width: 32px; height: 32px; } .stem-active-tool-title p, .stem-active-tool-hint { display: none; } .stem-active-tool-back { min-height: 36px; padding: 0 10px; } .stem-tool-catalog { width: 100%; } .stem-tool-searchbar { position: static; padding-top: 0; } .stem-catalog-context { align-items: flex-start; margin-top: 0; } .stem-catalog-status, .stem-catalog-clear { min-height: 32px; } .stem-catalog-chip { min-height: 38px; font-size: 12px; padding: 0 12px; } .stem-tool-matchmaker-form, .stem-tool-ai-suggestions { grid-template-columns: 1fr; } .stem-tool-matchmaker-button { width: 100%; } .stem-tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } .stem-tool-card { min-height: 220px; padding: 22px !important; } .stem-tool-card h4, .stem-tool-card .stem-tool-card-title { font-size: 20px !important; line-height: 1.25; } .stem-tool-card p, .stem-tool-card .stem-tool-card-desc { font-size: 16px !important; line-height: 1.55; } }',
           '@media (max-width: 640px) { .stem-lab-modal-shell { max-height: 100% !important; } .stem-lab-scroll-region { scrollbar-gutter: auto; } }',
@@ -7757,10 +7830,145 @@
             style: { color: _pal.textMuted }
           }, "Explore tool"))), /*#__PURE__*/React.createElement("div", {
             className: "stem-active-tool-actions"
-          }, /*#__PURE__*/React.createElement("span", {
+          }, _getStemCloudflareUrl(stemLabTool) ? /*#__PURE__*/React.createElement("button", {
+            type: "button",
+            className: "stem-direct-link-btn",
+            "data-stem-direct-link-toggle": "true",
+            "aria-expanded": _showActiveDirectLink ? "true" : "false",
+            "aria-controls": "stem-active-direct-link-panel",
+            "aria-label": (_showActiveDirectLink ? "Hide" : "Show") + " shareable Cloudflare link for " + _activeStemToolMeta.label,
+            onClick: function () {
+              var nextOpen = !_showActiveDirectLink;
+              _setShowActiveDirectLink(nextOpen);
+              if (typeof announceToSR === 'function') {
+                announceToSR(nextOpen ? ('Showing Cloudflare link for ' + _activeStemToolMeta.label) : 'Hid Cloudflare link');
+              }
+            },
+            style: {
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              minHeight: 44,
+              padding: '0 12px',
+              borderRadius: 10,
+              border: '1px solid ' + (isContrast ? '#fbbf24' : (isDark ? 'rgba(56,189,248,0.45)' : 'rgba(2,132,199,0.35)')),
+              backgroundColor: _showActiveDirectLink
+                ? (isContrast ? '#fbbf24' : '#0369a1')
+                : (isContrast ? '#111' : (isDark ? 'rgba(14,165,233,0.16)' : '#f0f9ff')),
+              color: _showActiveDirectLink
+                ? (isContrast ? '#000' : '#ffffff')
+                : (isContrast ? '#fbbf24' : (isDark ? '#bae6fd' : '#075985')),
+              fontSize: 12,
+              fontWeight: 800,
+              cursor: 'pointer'
+            }
+          }, /*#__PURE__*/React.createElement("span", { "aria-hidden": "true" }, "\uD83D\uDD17"), /*#__PURE__*/React.createElement("span", null, "Cloudflare link")) : null, /*#__PURE__*/React.createElement("span", {
             className: "stem-active-tool-hint",
             style: { color: _pal.textMuted }
           }, "Esc or Alt+B returns to all tools"))),
+        stemLabTab === 'explore' && stemLabTool && _activeStemToolMeta && _showActiveDirectLink && _getStemCloudflareUrl(stemLabTool) && (function () {
+          var _directUrl = _getStemCloudflareUrl(stemLabTool);
+          var _isCopied = _copiedDirectLinkId === stemLabTool;
+          return /*#__PURE__*/React.createElement("div", {
+            id: "stem-active-direct-link-panel",
+            role: "region",
+            "aria-label": "Shareable Cloudflare link for " + _activeStemToolMeta.label,
+            style: {
+              padding: '10px 24px',
+              borderBottom: '1px solid ' + _pal.border,
+              backgroundColor: isContrast ? '#000' : (isDark ? '#0f172a' : '#f0f9ff'),
+              color: _pal.text,
+              flexShrink: 0,
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 10
+            }
+          },
+            /*#__PURE__*/React.createElement("div", { style: { minWidth: 0, flex: '1 1 260px' } },
+              /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, fontWeight: 800, color: isContrast ? '#fbbf24' : (isDark ? '#e0f2fe' : '#0c4a6e') } },
+                "Shareable Cloudflare link — opens " + _activeStemToolMeta.label + " standalone (no signup)"
+              ),
+              /*#__PURE__*/React.createElement("code", {
+                style: {
+                  display: 'inline-block',
+                  marginTop: 4,
+                  padding: '3px 8px',
+                  borderRadius: 6,
+                  fontSize: 12,
+                  fontFamily: 'monospace',
+                  wordBreak: 'break-all',
+                  backgroundColor: isContrast ? '#111' : (isDark ? '#1e293b' : '#ffffff'),
+                  color: isContrast ? '#ffffff' : (isDark ? '#f8fafc' : '#0f172a'),
+                  border: '1px solid ' + (isContrast ? '#fbbf24' : (isDark ? '#334155' : '#bae6fd'))
+                }
+              }, _directUrl)
+            ),
+            /*#__PURE__*/React.createElement("div", { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 } },
+              /*#__PURE__*/React.createElement("button", {
+                type: "button",
+                className: "stem-direct-link-action",
+                onClick: function () { _copyStemCloudflareUrl(stemLabTool, _activeStemToolMeta.label, _directUrl); },
+                "aria-label": "Copy Cloudflare link for " + _activeStemToolMeta.label,
+                style: {
+                  minHeight: 44,
+                  padding: '0 14px',
+                  borderRadius: 8,
+                  border: '1px solid ' + (isContrast ? '#fbbf24' : '#0369a1'),
+                  backgroundColor: isContrast ? '#fbbf24' : '#0369a1',
+                  color: isContrast ? '#000' : '#ffffff',
+                  fontSize: 12,
+                  fontWeight: 800,
+                  cursor: 'pointer'
+                }
+              }, _isCopied ? "Copied link" : "Copy link"),
+              /*#__PURE__*/React.createElement("a", {
+                href: _directUrl,
+                target: "_blank",
+                rel: "noopener noreferrer",
+                className: "stem-direct-link-action",
+                "aria-label": "Open " + _activeStemToolMeta.label + " standalone on Cloudflare",
+                style: {
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  minHeight: 44,
+                  padding: '0 14px',
+                  borderRadius: 8,
+                  border: '1px solid ' + (isContrast ? '#fbbf24' : (isDark ? '#38bdf8' : '#7dd3fc')),
+                  backgroundColor: isContrast ? '#111' : (isDark ? '#1e293b' : '#ffffff'),
+                  color: isContrast ? '#fbbf24' : (isDark ? '#e0f2fe' : '#075985'),
+                  fontSize: 12,
+                  fontWeight: 800,
+                  textDecoration: 'none'
+                }
+              }, "Open standalone ", /*#__PURE__*/React.createElement("span", { "aria-hidden": "true" }, "\u2197")),
+              /*#__PURE__*/React.createElement("button", {
+                type: "button",
+                className: "stem-direct-link-action",
+                onClick: function () { _setShowActiveDirectLink(false); },
+                "aria-label": "Hide shareable Cloudflare link",
+                style: {
+                  minHeight: 44,
+                  padding: '0 12px',
+                  borderRadius: 8,
+                  border: '1px solid ' + _pal.border,
+                  backgroundColor: isContrast ? '#111' : (isDark ? '#1e293b' : '#ffffff'),
+                  color: _pal.text,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }
+              }, "Hide")
+            ),
+            /*#__PURE__*/React.createElement("span", {
+              role: "status",
+              "aria-live": "polite",
+              className: "sr-only"
+            }, _directLinkStatus)
+          );
+        })(),
         stemLabTab === 'explore' && stemLabTool === 'waterCycle' && React.createElement('div', {
           role: 'region', 'aria-label': 'Optional Watershed journey',
           style: { padding: '10px 20px', background: _pal.bgAlt, color: _pal.text, borderBottom: '1px solid ' + _pal.border, flexShrink: 0 }
@@ -9556,14 +9764,38 @@
             })
           ),
 
-          // ── Station Controls ──
-          React.createElement("div", { className: "flex items-center gap-2 mb-4" },
+          // ── Station Controls & Shareable Cloudflare Links ──
+          React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-4" },
             // Create Station button
-            _stemClassAuthoring && React.createElement("button", { "aria-label": _showStationBuilder ? "Close Builder — toggle station builder" : "Create Station — toggle station builder",
+            _stemClassAuthoring && React.createElement("button", { type: "button", "aria-label": _showStationBuilder ? "Close Builder — toggle station builder" : "Create Station — toggle station builder",
               onClick: function() { _setShowStationBuilder(!_showStationBuilder); },
-              className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " +
+              className: "flex items-center gap-1.5 min-h-11 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " +
                 (_showStationBuilder ? "bg-indigo-600 text-white" : "bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100")
             }, "\uD83D\uDCCC", _showStationBuilder ? "Close Builder" : "Create Station"),
+            // Shareable Cloudflare links toggle for all browsing users
+            React.createElement("button", {
+              type: "button",
+              className: "stem-direct-link-btn flex items-center gap-1.5 min-h-11 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all",
+              "data-stem-catalog-links-toggle": "true",
+              "aria-expanded": _showCatalogDirectLinks ? "true" : "false",
+              "aria-controls": "stem-catalog-direct-links",
+              onClick: function() {
+                var nextShow = !_showCatalogDirectLinks;
+                _setShowCatalogDirectLinks(nextShow);
+                if (typeof announceToSR === 'function') {
+                  announceToSR(nextShow ? 'Showing shareable Cloudflare links for STEAM Lab tools' : 'Hid shareable Cloudflare links');
+                }
+              },
+              style: {
+                backgroundColor: _showCatalogDirectLinks
+                  ? (isContrast ? '#fbbf24' : '#0369a1')
+                  : (isContrast ? '#111' : (isDark ? 'rgba(14,165,233,0.16)' : '#f0f9ff')),
+                color: _showCatalogDirectLinks
+                  ? (isContrast ? '#000' : '#ffffff')
+                  : (isContrast ? '#fbbf24' : (isDark ? '#bae6fd' : '#075985')),
+                borderColor: isContrast ? '#fbbf24' : (isDark ? 'rgba(56,189,248,0.45)' : '#bae6fd')
+              }
+            }, React.createElement("span", { "aria-hidden": "true" }, "\uD83D\uDD17"), _showCatalogDirectLinks ? "Hide Cloudflare links" : "Cloudflare links (" + _toolCount + ")"),
             // Active station indicator
             _activeStation ? React.createElement("div", { className: "flex items-center gap-2 flex-1 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200" },
               React.createElement("span", { className: "text-xs font-bold text-emerald-700" }, "\uD83C\uDFAF Station: " + _activeStation.name),
@@ -10129,6 +10361,111 @@
             _activeStation.teacherNote ? React.createElement("p", { className: "text-xs text-emerald-700 italic mt-1" }, "\uD83D\uDCDD " + _activeStation.teacherNote) : null
           ) : null,
 
+          // ── Shareable Cloudflare Direct Links Panel (matches current search/category/station filter) ──
+          _showCatalogDirectLinks ? (function () {
+            var _linkItems = _filteredTools.filter(function (tool) {
+              return tool && !tool.category && tool.ready !== false && _getStemCloudflareUrl(tool.id);
+            });
+            return React.createElement("div", {
+              id: "stem-catalog-direct-links",
+              role: "region",
+              "aria-label": "Shareable Cloudflare links for matching STEAM Lab tools",
+              className: "mb-4 rounded-xl border p-4",
+              style: {
+                backgroundColor: isContrast ? '#000' : (isDark ? '#0f172a' : '#f0f9ff'),
+                borderColor: isContrast ? '#fbbf24' : (isDark ? '#334155' : '#bae6fd'),
+                color: _pal.text
+              }
+            },
+              React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2 mb-3" },
+                React.createElement("div", null,
+                  React.createElement("h3", {
+                    className: "text-sm font-black",
+                    style: { color: isContrast ? '#fbbf24' : (isDark ? '#e0f2fe' : '#0c4a6e') }
+                  }, "Shareable Cloudflare links (" + _linkItems.length + ")"),
+                  React.createElement("p", {
+                    className: "text-xs mt-0.5",
+                    style: { color: _pal.textMuted }
+                  }, "Each link opens that tool directly on alloflow-cdn.pages.dev with no account or signup. Filter or search above to narrow this list.")
+                ),
+                React.createElement("button", {
+                  type: "button",
+                  className: "stem-direct-link-action min-h-11 px-3 py-1.5 rounded-lg text-xs font-bold border",
+                  onClick: function () { _setShowCatalogDirectLinks(false); },
+                  "aria-label": "Close Cloudflare links list",
+                  style: {
+                    backgroundColor: isContrast ? '#111' : (isDark ? '#1e293b' : '#ffffff'),
+                    color: _pal.text,
+                    borderColor: _pal.border
+                  }
+                }, "Close")
+              ),
+              _linkItems.length === 0
+                ? React.createElement("p", { className: "text-xs", style: { color: _pal.textMuted } }, "No tools match the current filter.")
+                : React.createElement("ul", {
+                    className: "space-y-2 max-h-80 overflow-y-auto pr-1 list-none p-0 m-0",
+                    "aria-label": "Matching STEAM tool Cloudflare URLs"
+                  },
+                    _linkItems.map(function (tool) {
+                      var _url = _getStemCloudflareUrl(tool.id);
+                      var _copied = _copiedDirectLinkId === tool.id;
+                      return React.createElement("li", {
+                        key: 'cf-row-' + tool.id,
+                        className: "rounded-lg border p-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2",
+                        style: {
+                          backgroundColor: isContrast ? '#111' : (isDark ? '#1e293b' : '#ffffff'),
+                          borderColor: isContrast ? '#fbbf24' : (isDark ? '#334155' : '#e2e8f0')
+                        }
+                      },
+                        React.createElement("div", { className: "min-w-0 flex-1" },
+                          React.createElement("div", { className: "text-xs font-bold", style: { color: _pal.text } },
+                            React.createElement("span", { "aria-hidden": "true", className: "mr-1.5" }, tool.icon),
+                            tool.label
+                          ),
+                          tool.desc ? React.createElement("div", { className: "text-xs mt-0.5", style: { color: _pal.textMuted } }, tool.desc) : null,
+                          React.createElement("code", {
+                            className: "block text-xs font-mono break-all select-all mt-1",
+                            style: { color: isContrast ? '#fbbf24' : (isDark ? '#7dd3fc' : '#0369a1') }
+                          }, _url)
+                        ),
+                        React.createElement("div", { className: "flex flex-wrap gap-1.5 shrink-0" },
+                          React.createElement("button", {
+                            type: "button",
+                            className: "stem-direct-link-action min-h-11 px-3 py-1.5 rounded-lg text-xs font-bold border",
+                            onClick: function () { _copyStemCloudflareUrl(tool.id, tool.label, _url); },
+                            "aria-label": "Copy Cloudflare link for " + tool.label,
+                            style: {
+                              backgroundColor: isContrast ? '#fbbf24' : '#0369a1',
+                              color: isContrast ? '#000' : '#ffffff',
+                              borderColor: isContrast ? '#fbbf24' : '#0369a1'
+                            }
+                          }, _copied ? "Copied" : "Copy link"),
+                          React.createElement("a", {
+                            href: _url,
+                            target: "_blank",
+                            rel: "noopener noreferrer",
+                            className: "stem-direct-link-action min-h-11 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold border",
+                            "aria-label": "Open " + tool.label + " standalone on Cloudflare",
+                            style: {
+                              backgroundColor: isContrast ? '#111' : (isDark ? '#0f172a' : '#f8fafc'),
+                              color: isContrast ? '#fbbf24' : (isDark ? '#e0f2fe' : '#075985'),
+                              borderColor: isContrast ? '#fbbf24' : (isDark ? '#38bdf8' : '#7dd3fc'),
+                              textDecoration: 'none'
+                            }
+                          }, "Open ", React.createElement("span", { "aria-hidden": "true" }, "\u2197"))
+                        )
+                      );
+                    })
+                  ),
+              React.createElement("p", {
+                role: "status",
+                "aria-live": "polite",
+                className: _directLinkStatus ? "mt-2 text-xs font-bold" : "sr-only",
+                style: { color: isContrast ? '#fbbf24' : (isDark ? '#6ee7b7' : '#065f46') }
+              }, _directLinkStatus)
+            );
+          })() : null,
+
           // Tool grid
           /*#__PURE__*/React.createElement("div", { role: 'region', 'aria-label': _activeStation ? _activeStation.name + ' station tools' : 'STEAM Lab tools',
               className: "stem-tool-grid"
@@ -10635,7 +10972,7 @@
               return _renderStemPluginLoadError(_pluginError);
             }
             return React.createElement("div", {
-              className: "animate-pulse space-y-4 p-6",
+              className: "motion-safe:animate-pulse space-y-4 p-6",
               role: 'status',
               'aria-live': 'polite',
               'aria-busy': 'true',

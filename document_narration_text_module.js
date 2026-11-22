@@ -228,7 +228,7 @@ var AlloNarrationText = (() => {
   }
   function _replaceAccessibleMathAndSvgForSpeech(root, opts) {
     if (!root || !root.querySelectorAll) return;
-    const doc = (opts && opts.doc) || root.ownerDocument || (typeof document !== "undefined" ? document : null);
+    const doc = opts && opts.doc || root.ownerDocument || (typeof document !== "undefined" ? document : null);
     if (!doc) return;
     const includeTeacherOnly = !!(opts && opts.includeTeacherOnly);
     const preserveLanguageNodes = !!(opts && opts.preserveLanguageNodes);
@@ -285,7 +285,7 @@ var AlloNarrationText = (() => {
   }
   function _audioReadyText(html, narrationOptions) {
     const options = narrationOptions || {};
-    const Parser = typeof DOMParser === "function" ? DOMParser : (typeof window !== "undefined" && typeof window.DOMParser === "function" ? window.DOMParser : null);
+    const Parser = typeof DOMParser === "function" ? DOMParser : typeof window !== "undefined" && typeof window.DOMParser === "function" ? window.DOMParser : null;
     if (!Parser) return options.languageRuns ? [] : "";
     const doc = new Parser().parseFromString(html || "", "text/html");
     const root = doc.body || doc.documentElement;
@@ -432,9 +432,7 @@ var AlloNarrationText = (() => {
     const say = (node, key, fallback, n) => {
       const primary = _narrationLanguageOf(node, options.language).split("-")[0].toLowerCase();
       const byLang = options.languageRuns && options.labelsByLanguage && typeof options.labelsByLanguage === "object" ? options.labelsByLanguage : null;
-      const local = options.languageRuns
-        ? (byLang && isSafeKey(primary) && hasOwn.call(byLang, primary) ? byLang[primary] : null)
-        : (spokenLabels && typeof spokenLabels === "object" ? spokenLabels : null);
+      const local = options.languageRuns ? byLang && isSafeKey(primary) && hasOwn.call(byLang, primary) ? byLang[primary] : null : spokenLabels && typeof spokenLabels === "object" ? spokenLabels : null;
       const oneKey = key + "One";
       let phrase = null;
       if (local && typeof local === "object") {
@@ -443,7 +441,7 @@ var AlloNarrationText = (() => {
       }
       return phrase ? phrase.replace(/\{n\}/g, String(n)) : fallback;
     };
-    const Parser = typeof DOMParser === "function" ? DOMParser : (typeof window !== "undefined" && typeof window.DOMParser === "function" ? window.DOMParser : null);
+    const Parser = typeof DOMParser === "function" ? DOMParser : typeof window !== "undefined" && typeof window.DOMParser === "function" ? window.DOMParser : null;
     if (!Parser) return options.languageRuns ? [] : "";
     const doc = new Parser().parseFromString(html || "", "text/html");
     _narrationPrepareDocument(doc, options);

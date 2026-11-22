@@ -5266,45 +5266,46 @@ function _alloLinearizeSpeechMath(mathEl) {
   const mathBase = (s) => /^[A-Za-z0-9.]+$/.test(s) || Array.from(s).length === 1 ? s : "(" + s + ")";
   const mathScript = (s) => /^-?[A-Za-z0-9]+$/.test(s) ? s : "(" + s + ")";
   const OVER_ACCENT = { "\xAF": "bar", "\u203E": "bar", "\u02C9": "bar", "_": "bar", "^": "hat", "\u02C6": "hat", "~": "tilde", "\u02DC": "tilde", "\u2192": "vec", "\u20D7": "vec", "\u02D9": "dot", "\xA8": "ddot" };
-  const walkMath = (node) => {
-    if (!node) return "";
+  const walkMath = (node, depth = 0) => {
+    if (!node || depth > 64) return "";
     if (node.nodeType === 3) return String(node.nodeValue || node.textContent || "");
     if (node.nodeType !== 1) return "";
+    const nextDepth = depth + 1;
     const t = String(node.tagName || "").toLowerCase();
     if (t === "annotation" || t === "annotation-xml") return "";
     if (t === "mspace") return " ";
     const ch = Array.from(node.children || []);
-    if (t === "mfrac" && ch.length >= 2) return "(" + cleanSp(walkMath(ch[0])) + ")/(" + cleanSp(walkMath(ch[1])) + ")";
+    if (t === "mfrac" && ch.length >= 2) return "(" + cleanSp(walkMath(ch[0], nextDepth)) + ")/(" + cleanSp(walkMath(ch[1], nextDepth)) + ")";
     if (t === "msup" && ch.length >= 2) {
-      const b = cleanSp(walkMath(ch[0]));
-      const e = cleanSp(walkMath(ch[1]));
+      const b = cleanSp(walkMath(ch[0], nextDepth));
+      const e = cleanSp(walkMath(ch[1], nextDepth));
       return b ? mathAtom(b) + "^" + mathScript(e) : e;
     }
     if (t === "msub" && ch.length >= 2) {
-      const b = cleanSp(walkMath(ch[0]));
-      const s = cleanSp(walkMath(ch[1]));
+      const b = cleanSp(walkMath(ch[0], nextDepth));
+      const s = cleanSp(walkMath(ch[1], nextDepth));
       return b ? mathAtom(b) + "_" + mathScript(s) : s;
     }
     if (t === "msubsup" && ch.length >= 3) {
-      const b = cleanSp(walkMath(ch[0]));
-      const s = cleanSp(walkMath(ch[1]));
-      const e = cleanSp(walkMath(ch[2]));
+      const b = cleanSp(walkMath(ch[0], nextDepth));
+      const s = cleanSp(walkMath(ch[1], nextDepth));
+      const e = cleanSp(walkMath(ch[2], nextDepth));
       return b ? mathAtom(b) + "_" + mathScript(s) + "^" + mathScript(e) : "";
     }
     if (t === "munderover" && ch.length >= 3) {
-      const b = cleanSp(walkMath(ch[0]));
-      const u = cleanSp(walkMath(ch[1]));
-      const o = cleanSp(walkMath(ch[2]));
+      const b = cleanSp(walkMath(ch[0], nextDepth));
+      const u = cleanSp(walkMath(ch[1], nextDepth));
+      const o = cleanSp(walkMath(ch[2], nextDepth));
       return b ? mathBase(b) + (u ? "_" + mathScript(u) : "") + (o ? "^" + mathScript(o) : "") : cleanSp(u + " " + o);
     }
     if (t === "munder" && ch.length >= 2) {
-      const b = cleanSp(walkMath(ch[0]));
-      const u = cleanSp(walkMath(ch[1]));
+      const b = cleanSp(walkMath(ch[0], nextDepth));
+      const u = cleanSp(walkMath(ch[1], nextDepth));
       return b && u ? mathBase(b) + "_" + mathScript(u) : b || u;
     }
     if (t === "mover" && ch.length >= 2) {
-      const b = cleanSp(walkMath(ch[0]));
-      const o = cleanSp(walkMath(ch[1]));
+      const b = cleanSp(walkMath(ch[0], nextDepth));
+      const o = cleanSp(walkMath(ch[1], nextDepth));
       if (b && Object.prototype.hasOwnProperty.call(OVER_ACCENT, o)) return OVER_ACCENT[o] + "(" + b + ")";
       return b && o ? mathBase(b) + "^" + mathScript(o) : b || o;
     }
@@ -5312,10 +5313,10 @@ function _alloLinearizeSpeechMath(mathEl) {
       const rows = ch.map((row) => {
         const rt = String(row.tagName || "").toLowerCase();
         if (rt === "mtr" || rt === "mlabeledtr") {
-          const cells = Array.from(row.children || []).map((c) => cleanSp(walkMath(c))).filter(Boolean);
+          const cells = Array.from(row.children || []).map((c) => cleanSp(walkMath(c, nextDepth))).filter(Boolean);
           return cells.join(", ");
         }
-        return cleanSp(walkMath(row));
+        return cleanSp(walkMath(row, nextDepth));
       }).filter(Boolean);
       return rows.length ? "[" + rows.join("; ") + "]" : "";
     }
@@ -5323,7 +5324,7 @@ function _alloLinearizeSpeechMath(mathEl) {
       const open = node.getAttribute("open") != null ? node.getAttribute("open") : "(";
       const close = node.getAttribute("close") != null ? node.getAttribute("close") : ")";
       const seps = Array.from(String(node.getAttribute("separators") != null ? node.getAttribute("separators") : ",").replace(/\s+/g, ""));
-      const parts = ch.map((c) => cleanSp(walkMath(c)));
+      const parts = ch.map((c) => cleanSp(walkMath(c, nextDepth)));
       let out = "";
       for (let i = 0; i < parts.length; i++) {
         if (i > 0) {
@@ -5335,21 +5336,22 @@ function _alloLinearizeSpeechMath(mathEl) {
       return open + out + close;
     }
     if (t === "msqrt") {
-      const inner = cleanSp(Array.from(node.childNodes || []).map(walkMath).join(""));
+      const inner = cleanSp(Array.from(node.childNodes || []).map((child) => walkMath(child, nextDepth)).join(""));
       return inner ? "sqrt(" + inner + ")" : "";
     }
     if (t === "mroot" && ch.length >= 2) {
-      const b = cleanSp(walkMath(ch[0]));
-      const idx = cleanSp(walkMath(ch[1]));
+      const b = cleanSp(walkMath(ch[0], nextDepth));
+      const idx = cleanSp(walkMath(ch[1], nextDepth));
       return b && idx ? "root(" + idx + ", " + b + ")" : b;
     }
-    return Array.from(node.childNodes || []).map(walkMath).join("");
+    return Array.from(node.childNodes || []).map((child) => walkMath(child, nextDepth)).join("");
   };
-  return cleanSp(walkMath(mathEl)) || cleanSp(mathEl.getAttribute && mathEl.getAttribute("data-allo-latex") || "");
+  return cleanSp(walkMath(mathEl, 0)) || cleanSp(mathEl.getAttribute && mathEl.getAttribute("data-allo-latex") || "");
 }
 function _replaceAccessibleMathAndSvgForSpeech(root, opts) {
   if (!root || !root.querySelectorAll) return;
-  const doc = opts && opts.doc || root.ownerDocument || document;
+  const doc = opts && opts.doc || root.ownerDocument || (typeof document !== "undefined" ? document : null);
+  if (!doc) return;
   const includeTeacherOnly = !!(opts && opts.includeTeacherOnly);
   const preserveLanguageNodes = !!(opts && opts.preserveLanguageNodes);
   if (!includeTeacherOnly) {
@@ -5405,9 +5407,11 @@ function _replaceAccessibleMathAndSvgForSpeech(root, opts) {
 }
 function _audioReadyText(html, narrationOptions) {
   const options = narrationOptions || {};
-  const doc = new DOMParser().parseFromString(html || "", "text/html");
+  const Parser = typeof DOMParser === "function" ? DOMParser : typeof window !== "undefined" && typeof window.DOMParser === "function" ? window.DOMParser : null;
+  if (!Parser) return options.languageRuns ? [] : "";
+  const doc = new Parser().parseFromString(html || "", "text/html");
   const root = doc.body || doc.documentElement;
-  if (!root) return "";
+  if (!root) return options.languageRuns ? [] : "";
   let _preamble = "";
   let preambleRuns = [];
   const _note = root.querySelector("[data-allo-translation-note], [data-allo-plain-note]");
@@ -5721,6 +5725,7 @@ function _alloRenumberFootnotes(doc) {
   }
 }
 function _narrationLanguageOf(node, fallback) {
+  if (!node) return fallback || "en";
   let el = node.nodeType === 1 ? node : node.parentElement;
   while (el) {
     if (el.lang) return el.lang;
@@ -5746,6 +5751,7 @@ function _narrationPrepareDocument(doc, options) {
 function _narrationTextRuns(node, fallback) {
   const runs = [];
   const visit = (n) => {
+    if (!n) return;
     const language = _narrationLanguageOf(n, fallback);
     if (n.nodeType === 3) {
       runs.push({ text: n.textContent, language });
@@ -5774,9 +5780,10 @@ function _narrationTextRuns(node, fallback) {
   return runs;
 }
 function _narrationMergeRuns(input, natural) {
+  if (!Array.isArray(input)) return [];
   const runs = [];
   for (const item of input) {
-    if (!item.text) continue;
+    if (!item || !item.text) continue;
     const previous = runs[runs.length - 1];
     if (previous && (previous.language === item.language || !/[\p{L}\p{N}\p{S}]/u.test(item.text))) previous.text += item.text;
     else runs.push({ ...item });
@@ -5789,13 +5796,23 @@ function _narrationMergeRuns(input, natural) {
 }
 function _srStyleTextFromHtml(html, spokenLabels, narrationOptions) {
   const options = narrationOptions || {};
+  const hasOwn = Object.prototype.hasOwnProperty;
+  const isSafeKey = (k) => typeof k === "string" && k !== "__proto__" && k !== "constructor" && k !== "prototype";
   const say = (node, key, fallback, n) => {
     const primary = _narrationLanguageOf(node, options.language).split("-")[0].toLowerCase();
-    const local = options.languageRuns ? options.labelsByLanguage?.[primary] : spokenLabels;
-    const phrase = local && (Number(n) === 1 && local[key + "One"] || local[key]);
+    const byLang = options.languageRuns && options.labelsByLanguage && typeof options.labelsByLanguage === "object" ? options.labelsByLanguage : null;
+    const local = options.languageRuns ? byLang && isSafeKey(primary) && hasOwn.call(byLang, primary) ? byLang[primary] : null : spokenLabels && typeof spokenLabels === "object" ? spokenLabels : null;
+    const oneKey = key + "One";
+    let phrase = null;
+    if (local && typeof local === "object") {
+      if (Number(n) === 1 && isSafeKey(oneKey) && hasOwn.call(local, oneKey) && typeof local[oneKey] === "string") phrase = local[oneKey];
+      else if (isSafeKey(key) && hasOwn.call(local, key) && typeof local[key] === "string") phrase = local[key];
+    }
     return phrase ? phrase.replace(/\{n\}/g, String(n)) : fallback;
   };
-  const doc = new DOMParser().parseFromString(html || "", "text/html");
+  const Parser = typeof DOMParser === "function" ? DOMParser : typeof window !== "undefined" && typeof window.DOMParser === "function" ? window.DOMParser : null;
+  if (!Parser) return options.languageRuns ? [] : "";
+  const doc = new Parser().parseFromString(html || "", "text/html");
   _narrationPrepareDocument(doc, options);
   const inlineText = (node) => {
     if (!node) return "";
@@ -5819,6 +5836,7 @@ function _srStyleTextFromHtml(html, spokenLabels, narrationOptions) {
     }
   };
   const walk = (el) => {
+    if (!el || !el.childNodes) return;
     for (const node of Array.from(el.childNodes)) {
       if (node.nodeType !== 1) {
         if (node.nodeType === 3 && node.textContent.trim()) add(el, node);
@@ -5860,7 +5878,13 @@ function _srStyleTextFromHtml(html, spokenLabels, narrationOptions) {
         continue;
       }
       if (tag === "table") {
-        const rows = Array.from(node.querySelectorAll("tr")), cols = rows.length ? Math.max.apply(null, rows.map((r) => Array.from(r.children).reduce((sum, c) => sum + Math.max(1, parseInt(c.getAttribute && c.getAttribute("colspan"), 10) || 1), 0))) : 0, cap = node.querySelector("caption");
+        const rows = Array.from(node.querySelectorAll("tr"));
+        let cols = 0;
+        for (let ri = 0; ri < rows.length; ri++) {
+          const rowCols = Array.from(rows[ri].children).reduce((sum, c) => sum + Math.max(1, parseInt(c.getAttribute && c.getAttribute("colspan"), 10) || 1), 0);
+          if (rowCols > cols) cols = rowCols;
+        }
+        const cap = node.querySelector("caption");
         add(node, say(node, "table", "Table"), ...cap && cap.textContent.trim() ? [", ", cap] : [], ", " + say(node, "rows", rows.length + " row" + (rows.length === 1 ? "" : "s"), rows.length) + ", " + say(node, "columns", cols + " column" + (cols === 1 ? "" : "s"), cols) + ".");
         rows.forEach((row, i) => {
           const cells = Array.from(row.children).filter((c) => readable(c));
